@@ -1,0 +1,54 @@
+/**
+ * IRANSansX Font Family
+ * Persian/Farsi Font for PacksiDashboard
+ */
+
+@font-face {
+  font-family: 'IRANSansX';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('./Webfonts/fonts/woff2/IRANSansX-Regular.woff2') format('woff2'),
+       url('./Webfonts/fonts/woff/IRANSansX-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'IRANSansX';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('./Webfonts/fonts/woff2/IRANSansX-Bold.woff2') format('woff2'),
+       url('./Webfonts/fonts/woff/IRANSansX-Bold.woff') format('woff');
+}
+
+/* Persian/Farsi font class */
+.font-persian {
+  font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* RTL text direction */
+.rtl-text {
+  direction: rtl;
+  text-align: right;
+  font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
+}
+
+/* Persian font weights */
+.font-persian-regular {
+  font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
+  font-weight: 400;
+}
+
+.font-persian-bold {
+  font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
+  font-weight: 700;
+}
+
+/* Apply Persian font to all elements in RTL mode */
+[dir="rtl"] {
+  font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
+}
+
+[dir="rtl"] * {
+  font-family: 'IRANSansX', 'Tahoma', 'Arial', sans-serif;
+}
