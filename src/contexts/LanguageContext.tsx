@@ -81,6 +81,25 @@ const translations = {
     // Language
     'language.english': 'English',
     'language.persian': 'فارسی',
+
+    // Landing
+    'landing.title': 'Passenger-powered shipping, fast and secure',
+    'landing.subtitle': 'Match with trusted travelers, track flights live, and deliver globally with confidence.',
+    'landing.hero.tag': 'Peer-to-peer shipping platform',
+    'landing.cta.request': 'Request a shipment',
+    'landing.cta.carrier': "I'm a traveler",
+    'landing.flightStatusTitle': 'Registered flights status',
+    'landing.howItWorks': 'How it works',
+    'landing.hero.metrics.parcels': 'Parcels sent',
+    'landing.hero.metrics.flights': 'Active flights',
+
+    // Flight statuses
+    'flight.status.registered': 'Registered',
+    'flight.status.pickedUp': 'Picked up',
+    'flight.status.atAirport': 'At airport',
+    'flight.status.inFlight': 'In flight',
+    'flight.status.arrived': 'Arrived',
+    'flight.status.delivered': 'Delivered',
   },
   fa: {
     // Header
@@ -148,6 +167,25 @@ const translations = {
     // Language
     'language.english': 'English',
     'language.persian': 'فارسی',
+
+    // Landing
+    'landing.title': 'حمل توسط مسافر، سریع و امن',
+    'landing.subtitle': 'با مسافران مورد اعتماد مچ شوید، پروازها را زنده ببینید و با اطمینان جهانی ارسال کنید.',
+    'landing.hero.tag': 'پلتفرم حمل توسط مسافر',
+    'landing.cta.request': 'ثبت درخواست حمل',
+    'landing.cta.carrier': 'مسافر هستم',
+    'landing.flightStatusTitle': 'وضعیت پروازهای ثبت‌شده',
+    'landing.howItWorks': 'چطور کار می‌کند',
+    'landing.hero.metrics.parcels': 'بسته ارسال‌شده',
+    'landing.hero.metrics.flights': 'پرواز فعال',
+
+    // Flight statuses
+    'flight.status.registered': 'ثبت‌شده',
+    'flight.status.pickedUp': 'تحویل از فرستنده',
+    'flight.status.atAirport': 'در فرودگاه',
+    'flight.status.inFlight': 'در پرواز',
+    'flight.status.arrived': 'ورود به مقصد',
+    'flight.status.delivered': 'تحویل نهایی',
   }
 };
 
