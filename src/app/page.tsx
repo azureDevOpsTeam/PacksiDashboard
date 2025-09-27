@@ -14,26 +14,26 @@ const StatCard = ({ title, value, change, changeType, icon: Icon, color }: {
   color: string;
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-lg hover:shadow-slate-200/20 dark:hover:shadow-slate-900/20 transition-all duration-300 hover:-translate-y-1">
       <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{title}</p>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white mt-2">{value}</p>
-          <div className="flex items-center mt-2">
+        <div className="flex-1">
+          <p className="text-xs font-medium text-slate-600 dark:text-slate-400 uppercase tracking-wide">{title}</p>
+          <p className="text-xl font-bold text-slate-900 dark:text-white mt-2">{value}</p>
+          <div className="flex items-center mt-3">
             {changeType === 'increase' ? (
-              <ArrowUpRight className="w-4 h-4 text-green-500" />
+              <ArrowUpRight className="w-3.5 h-3.5 text-green-500" />
             ) : (
-              <ArrowDownRight className="w-4 h-4 text-red-500" />
+              <ArrowDownRight className="w-3.5 h-3.5 text-red-500" />
             )}
-            <span className={`text-sm font-medium ml-1 ${
+            <span className={`text-xs font-medium ml-1 ${
               changeType === 'increase' ? 'text-green-500' : 'text-red-500'
             }`}>
               {change}
             </span>
           </div>
         </div>
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}>
-          <Icon className="w-6 h-6 text-white" />
+        <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color} shadow-lg`}>
+          <Icon className="w-5 h-5 text-white" />
         </div>
       </div>
     </div>
@@ -48,16 +48,12 @@ const ServiceCard = ({ title, description, icon, color }: {
   color: string;
 }) => {
   return (
-    <div className="bg-white dark:bg-slate-800 rounded-xl p-6 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow cursor-pointer">
-      <div className="flex items-center space-x-4 rtl:space-x-reverse">
-        <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${color}`}>
-          <span className="text-2xl">{icon}</span>
-        </div>
-        <div>
-          <h3 className="font-semibold text-slate-900 dark:text-white">{title}</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-400">{description}</p>
-        </div>
+    <div className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-5 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-lg hover:shadow-slate-200/20 dark:hover:shadow-slate-900/20 transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+      <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color} mb-4 shadow-lg`}>
+        <span className="text-lg">{icon}</span>
       </div>
+      <h3 className="text-base font-semibold text-slate-900 dark:text-white mb-2">{title}</h3>
+      <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">{description}</p>
     </div>
   );
 };
@@ -166,12 +162,12 @@ export default function Dashboard() {
           {quickActions.map((action, index) => (
             <button
               key={index}
-              className="bg-white dark:bg-slate-800 rounded-xl p-4 border border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow text-center"
+              className="bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-4 border border-slate-200/50 dark:border-slate-700/50 hover:shadow-lg hover:shadow-slate-200/20 dark:hover:shadow-slate-900/20 transition-all duration-300 hover:-translate-y-1 text-center group"
             >
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${action.color} mx-auto mb-2`}>
-                <span className="text-2xl">{action.icon}</span>
+              <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${action.color} mx-auto mb-3 shadow-lg group-hover:scale-110 transition-transform duration-200`}>
+                <span className="text-lg">{action.icon}</span>
               </div>
-              <p className="text-sm font-medium text-slate-900 dark:text-white">{action.title}</p>
+              <p className="text-xs font-medium text-slate-900 dark:text-white">{action.title}</p>
             </button>
           ))}
         </div>
