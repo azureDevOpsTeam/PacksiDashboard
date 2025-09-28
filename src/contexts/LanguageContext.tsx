@@ -81,6 +81,9 @@ const translations = {
     'footer.links': 'Links',
     'footer.address': 'Address',
     'footer.documents': 'Documents',
+    'footer.about': 'About',
+    'footer.services': 'Services',
+    'footer.contact': 'Contact',
     'footer.privacy': 'Privacy Policy',
     'footer.terms': 'Terms of Service',
 
@@ -98,6 +101,13 @@ const translations = {
     'landing.howItWorks': 'How it works',
     'landing.hero.metrics.parcels': 'Parcels sent',
     'landing.hero.metrics.flights': 'Active flights',
+    'landing.services.title': 'Services & Features',
+    'landing.services.desc': 'Two main services: temporary room rentals by individuals, and driving lessons across various locations. Each service is presented in a separate tile with a map and related points.',
+    'landing.table.code': 'Code',
+    'landing.table.route': 'Route',
+    'landing.table.progress': 'Progress',
+    'landing.driving.title': 'Driving Lessons',
+    'landing.driving.desc': 'Active points for organizing driving lessons and training sessions.',
 
     // Flight statuses
     'flight.status.registered': 'Registered',
@@ -175,6 +185,9 @@ const translations = {
     'footer.links': 'لینک‌ها',
     'footer.address': 'آدرس',
     'footer.documents': 'مدارک',
+    'footer.about': 'درباره',
+    'footer.services': 'خدمات',
+    'footer.contact': 'تماس',
     'footer.privacy': 'سیاست حریم خصوصی',
     'footer.terms': 'شرایط استفاده',
 
@@ -192,6 +205,13 @@ const translations = {
     'landing.howItWorks': 'چطور کار می‌کند',
     'landing.hero.metrics.parcels': 'بسته ارسال‌شده',
     'landing.hero.metrics.flights': 'پرواز فعال',
+    'landing.services.title': 'خدمات و قابلیت‌ها',
+    'landing.services.desc': 'دو خدمت اصلی: اجاره اتاق موقت توسط افراد و کلاس‌های رانندگی در موقعیت‌های مختلف. هر خدمت در یک کارت با نقشه و نقاط مرتبط نمایش داده می‌شود.',
+    'landing.table.code': 'کد',
+    'landing.table.route': 'مسیر',
+    'landing.table.progress': 'پیشروی',
+    'landing.driving.title': 'کلاس‌های رانندگی',
+    'landing.driving.desc': 'نقاط فعال برای برگزاری کلاس‌های رانندگی و دوره‌های آموزشی.',
 
     // Flight statuses
     'flight.status.registered': 'ثبت‌شده',

@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
+import LandingPage from './landing/page';
 
 export default function Home() {
-  // Redirect root to the dedicated landing route to avoid sidebar layout
-  redirect("/landing");
+  return <LandingPage />;
 }
