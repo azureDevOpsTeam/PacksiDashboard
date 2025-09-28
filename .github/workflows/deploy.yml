@@ -1,0 +1,130 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Run tests
+      run: npm run test --if-present
+      
+    - name: Check build
+      run: npm run build
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        
+    - name: Install dependencies
+      run: npm ci
+      
+    - name: Build project
+      run: npm run build
+      env:
+        APP_URL: ${{ secrets.APP_URL }}
+        
+    - name: Setup SSH key
+      run: |
+        mkdir -p ~/.ssh
+        echo "${{ secrets.SERVER_SSH_KEY }}" > ~/.ssh/id_rsa
+        chmod 600 ~/.ssh/id_rsa
+        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+        
+    - name: Deploy to server
+      run: |
+        # Ensure rsync is installed on the server
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "command -v rsync || sudo apt update && sudo apt install -y rsync"
+        
+        # Create deployment directory if it doesn't exist
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/landing"
+        
+        # Stop any running processes (if applicable)
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl stop nginx || true"
+        
+        # Backup current deployment
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo cp -r /var/www/landing /var/www/landing_backup_$(date +%Y%m%d_%H%M%S) || true"
+        
+        # Upload new files
+        rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa" ./out/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/landing/
+        
+        # Set proper permissions
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chown -R www-data:www-data /var/www/landing"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chmod -R 755 /var/www/landing"
+        
+        # Restart nginx
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl start nginx"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl reload nginx"
+        
+    - name: Verify deployment
+      run: |
+        # Wait a moment for services to start
+        sleep 10
+        
+        # Check if the site is accessible (with SSL verification)
+        echo "🔍 Testing HTTPS connection with SSL verification..."
+        if curl -f --connect-timeout 30 --max-time 60 https://packsi.net; then
+          echo "✅ HTTPS connection successful with valid SSL certificate"
+        else
+          echo "⚠️  HTTPS with SSL verification failed, testing with insecure connection..."
+          # Test without SSL verification for debugging
+          if curl -f -k --connect-timeout 30 --max-time 60 https://packsi.net; then
+            echo "⚠️  Site is accessible but SSL certificate has issues"
+            echo "🔧 Please check SSL certificate configuration:"
+            echo "   - Verify certificate matches domain name"
+            echo "   - Check certificate expiration"
+            echo "   - Ensure certificate is from trusted CA"
+            # Also test HTTP as fallback
+            if curl -f --connect-timeout 30 --max-time 60 http://packsi.net; then
+              echo "✅ HTTP connection works as fallback"
+            fi
+          else
+            echo "❌ Site is not accessible at all"
+            exit 1
+          fi
+        fi
+        
+        # Send success notification
+        echo "✅ Deployment completed! Site status checked at https://packsi.net"
+        
+    - name: Cleanup on failure
+      if: failure()
+      run: |
+        # Restore backup if deployment failed
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          BACKUP_DIR=\$(ls -t /var/www/landing_backup_* 2>/dev/null | head -1)
+          if [ -n \"\$BACKUP_DIR\" ]; then
+            sudo rm -rf /var/www/landing
+            sudo mv \$BACKUP_DIR /var/www/landing
+            sudo systemctl reload nginx
+            echo 'Restored previous version due to deployment failure'
+          fi
+        " || true
