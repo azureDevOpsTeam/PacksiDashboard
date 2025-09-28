@@ -8,6 +8,7 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (key: string) => string;
+  tLang: (key: string, lang: Language) => string;
   isRTL: boolean;
 }
 
@@ -77,6 +78,11 @@ const translations = {
     'footer.copyright': '© 2024 Packsi Dashboard. All rights reserved.',
     'footer.version': 'Version 1.0.0',
     'footer.support': 'Support',
+    'footer.links': 'Links',
+    'footer.address': 'Address',
+    'footer.documents': 'Documents',
+    'footer.privacy': 'Privacy Policy',
+    'footer.terms': 'Terms of Service',
 
     // Language
     'language.english': 'English',
@@ -87,7 +93,7 @@ const translations = {
     'landing.subtitle': 'Match with trusted travelers, track flights live, and deliver globally with confidence.',
     'landing.hero.tag': 'Peer-to-peer shipping platform',
     'landing.cta.request': 'Request a shipment',
-    'landing.cta.carrier': "I'm a traveler",
+    'landing.cta.carrier': "Support",
     'landing.flightStatusTitle': 'Registered flights status',
     'landing.howItWorks': 'How it works',
     'landing.hero.metrics.parcels': 'Parcels sent',
@@ -100,6 +106,9 @@ const translations = {
     'flight.status.inFlight': 'In flight',
     'flight.status.arrived': 'Arrived',
     'flight.status.delivered': 'Delivered',
+    // Auth
+    'auth.login': 'Login',
+    'auth.register': 'Register',
   },
   fa: {
     // Header
@@ -163,6 +172,11 @@ const translations = {
     'footer.copyright': '© ۱۴۰۳ داشبورد پکسی. تمامی حقوق محفوظ است.',
     'footer.version': 'نسخه ۱.۰.۰',
     'footer.support': 'پشتیبانی',
+    'footer.links': 'لینک‌ها',
+    'footer.address': 'آدرس',
+    'footer.documents': 'مدارک',
+    'footer.privacy': 'سیاست حریم خصوصی',
+    'footer.terms': 'شرایط استفاده',
 
     // Language
     'language.english': 'English',
@@ -173,7 +187,7 @@ const translations = {
     'landing.subtitle': 'با مسافران مورد اعتماد مچ شوید، پروازها را زنده ببینید و با اطمینان جهانی ارسال کنید.',
     'landing.hero.tag': 'پلتفرم حمل توسط مسافر',
     'landing.cta.request': 'ثبت درخواست حمل',
-    'landing.cta.carrier': 'مسافر هستم',
+    'landing.cta.carrier': 'پشتیبانی',
     'landing.flightStatusTitle': 'وضعیت پروازهای ثبت‌شده',
     'landing.howItWorks': 'چطور کار می‌کند',
     'landing.hero.metrics.parcels': 'بسته ارسال‌شده',
@@ -186,6 +200,9 @@ const translations = {
     'flight.status.inFlight': 'در پرواز',
     'flight.status.arrived': 'ورود به مقصد',
     'flight.status.delivered': 'تحویل نهایی',
+    // Auth
+    'auth.login': 'ورود',
+    'auth.register': 'ثبت‌نام',
   }
 };
 
@@ -213,10 +230,14 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return translations[language][key as keyof typeof translations[typeof language]] || key;
   };
 
+  const tLang = (key: string, lang: Language): string => {
+    return translations[lang][key as keyof typeof translations[typeof lang]] || key;
+  };
+
   const isRTL = language === 'fa';
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, isRTL }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, tLang, isRTL }}>
       {children}
     </LanguageContext.Provider>
   );

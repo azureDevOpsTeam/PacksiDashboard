@@ -1,6 +1,8 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
+import worldImg from '@/assets/images/world.png';
 
 type Blip = {
   id: string;
@@ -25,6 +27,27 @@ export default function Radar({ blips = defaultBlips, size = 420 }: { blips?: Bl
 
       {/* Radar body */}
       <div className="absolute inset-0 rounded-full overflow-hidden border border-emerald-500/30 bg-slate-900/90">
+        {/* World overlay (faded, creative) */}
+        <div className="absolute inset-0 pointer-events-none z-0">
+          <div
+            className="absolute inset-0 origin-center animate-[world-drift_28s_linear_infinite] opacity-30 mix-blend-soft-light saturate-150"
+            style={{
+              WebkitMaskImage:
+                'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.95) 34%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0) 100%)',
+              maskImage:
+                'radial-gradient(circle at 50% 50%, rgba(0,0,0,0.95) 34%, rgba(0,0,0,0.35) 70%, rgba(0,0,0,0) 100%)'
+            }}
+          >
+            <Image
+              src={worldImg}
+              alt="World map"
+              fill
+              className="object-contain md:object-cover scale-105 blur-[0.3px]"
+              priority={false}
+            />
+          </div>
+        </div>
+
         {/* Rings */}
         <div className="absolute inset-0 rounded-full" style={{
           background:
@@ -84,6 +107,11 @@ export default function Radar({ blips = defaultBlips, size = 420 }: { blips?: Bl
           0% { transform: scale(0.9); opacity: 0.6; }
           50% { transform: scale(1.2); opacity: 1; }
           100% { transform: scale(0.9); opacity: 0.6; }
+        }
+        @keyframes world-drift {
+          0% { transform: rotate(-7deg) scale(1.02); }
+          50% { transform: rotate(7deg) scale(1.05); }
+          100% { transform: rotate(-7deg) scale(1.02); }
         }
       `}</style>
     </div>
