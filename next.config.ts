@@ -1,7 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Generate static export to `out` so CI can deploy via rsync
+  output: 'export',
 };
 
 export default nextConfig;
