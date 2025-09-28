@@ -5,6 +5,7 @@ import Radar from '@/components/Radar';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import LanguageToggle from '@/components/LanguageToggle';
+import Script from 'next/script';
 // Load Leaflet map only on client to avoid SSR errors
 const LeafletMap = dynamic(() => import('@/components/LeafletMap'), { ssr: false });
 import type { LatLngPoint } from '@/components/LeafletMap';
@@ -91,6 +92,13 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950">
+      <Script
+        id="goftino-widget"
+        strategy="afterInteractive"
+        dangerouslySetInnerHTML={{
+          __html: `!function(){var i="BcQr2J",a=window,d=document;function g(){var g=d.createElement("script"),s="https://www.goftino.com/widget/"+i,l=localStorage.getItem("goftino_"+i);g.async=!0,g.src=l?s+"?o="+l:s;d.getElementsByTagName("head")[0].appendChild(g);} if(d.readyState==="complete"){g()} else {a.addEventListener("load",g,!1);} }();`
+        }}
+      />
       {/* background accents */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute -top-24 -right-24 w-[520px] h-[520px] rounded-full bg-emerald-500/10 blur-3xl" />
