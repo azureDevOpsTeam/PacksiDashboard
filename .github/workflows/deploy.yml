@@ -65,66 +65,118 @@ jobs:
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "command -v rsync || sudo apt update && sudo apt install -y rsync"
         
         # Create deployment directory if it doesn't exist
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/packsi-app"
-        
-        # Stop any running processes (if applicable)
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl stop nginx || true"
-        
-        # Backup current deployment
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo cp -r /var/www/packsi-app /var/www/packsi-app_backup_$(date +%Y%m%d_%H%M%S) || true"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo mkdir -p /var/www/packsi-app"
         
         # Upload new files
-        rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa" ./out/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/packsi-app/
+        rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa" ./out/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/tmp/packsi-app-new/
         
-        # Set proper permissions
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chown -R www-data:www-data /var/www/packsi-app"
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chmod -R 755 /var/www/packsi-app"
+        # Move files to final location with proper permissions
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          sudo rm -rf /var/www/packsi-app/*
+          sudo mv /tmp/packsi-app-new/* /var/www/packsi-app/
+          sudo rmdir /tmp/packsi-app-new
+          sudo chown -R www-data:www-data /var/www/packsi-app
+          sudo chmod -R 755 /var/www/packsi-app
+          sudo find /var/www/packsi-app -type f -name '*.html' -exec chmod 644 {} \;
+        "
         
-        # Restart nginx
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl start nginx"
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl reload nginx"
+        # Create nginx configuration for static site
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          sudo tee /etc/nginx/sites-available/packsi-app > /dev/null << 'EOF'
+        server {
+            listen 80;
+            listen [::]:80;
+            server_name packsi.net www.packsi.net;
+            
+            # Redirect HTTP to HTTPS
+            return 301 https://\$server_name\$request_uri;
+        }
+        
+        server {
+            listen 443 ssl http2;
+            listen [::]:443 ssl http2;
+            server_name packsi.net www.packsi.net;
+            
+            root /var/www/packsi-app;
+            index index.html;
+            
+            # SSL configuration (adjust paths as needed)
+            ssl_certificate /etc/ssl/certs/packsi.net.crt;
+            ssl_certificate_key /etc/ssl/private/packsi.net.key;
+            
+            # Security headers
+            add_header X-Frame-Options DENY;
+            add_header X-Content-Type-Options nosniff;
+            add_header X-XSS-Protection \"1; mode=block\";
+            
+            # Handle Next.js static export
+            location / {
+                try_files \$uri \$uri.html \$uri/ /index.html;
+            }
+            
+            # Cache static assets
+            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+                expires 1y;
+                add_header Cache-Control \"public, immutable\";
+            }
+            
+            # Security
+            location ~ /\. {
+                deny all;
+            }
+        }
+        EOF
+        "
+        
+        # Enable site and restart nginx
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+          sudo ln -sf /etc/nginx/sites-available/packsi-app /etc/nginx/sites-enabled/
+          sudo nginx -t && sudo systemctl reload nginx
+        "
         
     - name: Verify deployment
       run: |
         # Wait a moment for services to start
-        sleep 10
+        sleep 15
+        
+        # Check nginx status first
+        echo "🔍 Checking nginx status..."
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl status nginx --no-pager -l"
+        
+        # Check if files were deployed correctly
+        echo "🔍 Checking deployed files..."
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "ls -la /var/www/packsi-app/ | head -10"
+        
+        # Test nginx configuration
+        echo "🔍 Testing nginx configuration..."
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo nginx -t"
         
         # Check if the site is accessible (with SSL verification)
         echo "🔍 Testing HTTPS connection with SSL verification..."
-        if curl -f --connect-timeout 30 --max-time 60 https://packsi.net; then
+        if curl -f --connect-timeout 30 --max-time 60 -I https://packsi.net; then
           echo "✅ HTTPS connection successful with valid SSL certificate"
         else
           echo "⚠️  HTTPS with SSL verification failed, testing with insecure connection..."
           # Test without SSL verification for debugging
-          if curl -f -k --connect-timeout 30 --max-time 60 https://packsi.net; then
+          if curl -f -k --connect-timeout 30 --max-time 60 -I https://packsi.net; then
             echo "⚠️  Site is accessible but SSL certificate has issues"
             echo "🔧 Please check SSL certificate configuration:"
             echo "   - Verify certificate matches domain name"
             echo "   - Check certificate expiration"
             echo "   - Ensure certificate is from trusted CA"
-            # Also test HTTP as fallback
-            if curl -f --connect-timeout 30 --max-time 60 http://packsi.net; then
-              echo "✅ HTTP connection works as fallback"
-            fi
           else
-            echo "❌ Site is not accessible at all"
-            exit 1
+            echo "⚠️  HTTPS failed, testing HTTP..."
+            # Also test HTTP as fallback
+            if curl -f --connect-timeout 30 --max-time 60 -I http://packsi.net; then
+              echo "✅ HTTP connection works - SSL configuration issue"
+            else
+              echo "❌ Site is not accessible at all"
+              echo "🔍 Checking nginx error logs..."
+              ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo tail -20 /var/log/nginx/error.log"
+              exit 1
+            fi
           fi
         fi
         
         # Send success notification
         echo "✅ Deployment completed! Site status checked at https://packsi.net"
-        
-    - name: Cleanup on failure
-      if: failure()
-      run: |
-        # Restore backup if deployment failed
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-          BACKUP_DIR=\$(ls -t /var/www/packsi-app_backup_* 2>/dev/null | head -1)
-          if [ -n \"\$BACKUP_DIR\" ]; then
-            sudo rm -rf /var/www/packsi-app
-            sudo mv \$BACKUP_DIR /var/www/packsi-app
-            sudo systemctl reload nginx
-            echo 'Restored previous version due to deployment failure'
-          fi
-        " || true
