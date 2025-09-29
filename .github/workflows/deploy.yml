@@ -65,20 +65,20 @@ jobs:
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "command -v rsync || sudo apt update && sudo apt install -y rsync"
         
         # Create deployment directory if it doesn't exist
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/landing"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "mkdir -p /var/www/packsi-app"
         
         # Stop any running processes (if applicable)
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl stop nginx || true"
         
         # Backup current deployment
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo cp -r /var/www/landing /var/www/landing_backup_$(date +%Y%m%d_%H%M%S) || true"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo cp -r /var/www/packsi-app /var/www/packsi-app_backup_$(date +%Y%m%d_%H%M%S) || true"
         
         # Upload new files
-        rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa" ./out/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/landing/
+        rsync -avz --delete -e "ssh -i ~/.ssh/id_rsa" ./out/ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/www/packsi-app/
         
         # Set proper permissions
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chown -R www-data:www-data /var/www/landing"
-        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chmod -R 755 /var/www/landing"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chown -R www-data:www-data /var/www/packsi-app"
+        ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo chmod -R 755 /var/www/packsi-app"
         
         # Restart nginx
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "sudo systemctl start nginx"
@@ -120,10 +120,10 @@ jobs:
       run: |
         # Restore backup if deployment failed
         ssh -i ~/.ssh/id_rsa ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-          BACKUP_DIR=\$(ls -t /var/www/landing_backup_* 2>/dev/null | head -1)
+          BACKUP_DIR=\$(ls -t /var/www/packsi-app_backup_* 2>/dev/null | head -1)
           if [ -n \"\$BACKUP_DIR\" ]; then
-            sudo rm -rf /var/www/landing
-            sudo mv \$BACKUP_DIR /var/www/landing
+            sudo rm -rf /var/www/packsi-app
+            sudo mv \$BACKUP_DIR /var/www/packsi-app
             sudo systemctl reload nginx
             echo 'Restored previous version due to deployment failure'
           fi
